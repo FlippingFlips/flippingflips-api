@@ -1,0 +1,37 @@
+﻿@page "/help/guide"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@*@attribute [Authorize]*@
+
+<Microsoft.AspNetCore.Components.Web.Extensions.Head.Title Value="@($"Guides - Flipping Flips")" />
+
+<Container>
+    <Row>
+        <Column ColumnSize="ColumnSize.Is12">
+            <Tabs SelectedTab="@selectedTab" SelectedTabChanged="@OnSelectedTabChanged">
+                <Items>
+                    <Tab Name="players">Player menu</Tab>
+                    <Tab Name="script">Script</Tab>
+                </Items>
+                <Content>
+                    <TabPanel Name="players">
+                        <FF.Blazer.Pages.Help.Shared.PlayersVpMenu />
+                    </TabPanel>
+                    <TabPanel Name="script">
+                        <FF.Blazer.Pages.Help.Shared.GameScriptPatchV1 />
+                    </TabPanel>
+                </Content>
+            </Tabs>
+        </Column>
+        <Column></Column>
+    </Row>
+</Container>
+
+@code
+{
+    string selectedTab = "players";
+    private void OnSelectedTabChanged(string name)
+    {
+        selectedTab = name;
+    }
+}

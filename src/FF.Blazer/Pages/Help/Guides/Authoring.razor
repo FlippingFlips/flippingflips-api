@@ -1,0 +1,64 @@
+﻿@page "/help/guide/authoring"
+
+<Container>
+
+    <Microsoft.AspNetCore.Components.Web.Extensions.Head.Title Value="@($"Game Authoring Guides - Flipping Flips")" />
+
+    <Column ColumnSize="ColumnSize.Is12" TextAlignment="TextAlignment.Center">        
+        <Heading Size="HeadingSize.Is5">Game Authoring Guides</Heading>
+        <Divider/>
+    </Column>
+
+    <Column ColumnSize="ColumnSize.Is12" TextAlignment="TextAlignment.Center" Style="font-size:smaller">
+        <Paragraph>All games require to collect some data for the database and for patching the download.</Paragraph>
+        <UnorderedList  Unstyled=true>
+            <UnorderedListItem>Download link</UnorderedListItem>
+            <UnorderedListItem>Authors</UnorderedListItem>
+            <UnorderedListItem>Table Filename</UnorderedListItem>            
+            <UnorderedListItem>RomName (if pinmame)</UnorderedListItem>
+        </UnorderedList>
+        <Paragraph>Put the downloaded table in your tables folder and make a copy of it adding a <Code>-(Flips1.0)</Code> suffix to the name.</Paragraph>
+        <Divider />        
+    </Column>
+
+    <Tabs SelectedTab="@selectedTab" SelectedTabChanged="@OnSelectedTabChanged" Style="font-size:smaller">
+        <Items>
+            <Tab Name="pinmame">VP-PinMame</Tab>
+            <Tab Name="vporiginal">VP-Original-EM</Tab>
+            <Tab Name="fp">FP-Original</Tab>
+            <Tab Name="patches">Creating patches</Tab>
+        </Items>
+        <Content>
+            <TabPanel Name="pinmame">
+                <FF.Blazer.Pages.Help.Guides.Shared.PinMame/>
+            </TabPanel>
+            <TabPanel Name="vporiginal">
+                <FF.Blazer.Pages.Help.Shared.GameScriptPatchV1 />
+            </TabPanel>
+            <TabPanel Name="fp">
+                <Paragraph>TODO: Needs testing</Paragraph>
+            </TabPanel>
+            <TabPanel Name="patches">
+                <Divider/>
+                <Heading Size="HeadingSize.Is6">Creating Patch</Heading>
+                <Paragraph>Included with the controller is a patching file helper using JDIFF to create a diff file. <Code>FlipsJdiff.exe</Code> </Paragraph>
+                <Paragraph>This console command line tool will create table patch. This will save the end user having to edit tables to be compatible with score keeping and with very small file sizes.</Paragraph>
+                <Divider/>
+                <Paragraph>Create a diff patch by running <Code>FlipsJdiff.exe -d "oldFile.vpx" "newFile.vpx"</Code></Paragraph>
+                <Paragraph>This will create a .diff file in a directory under new table file name. A text file is also created giving you the CRC32 for both files.</Paragraph>
+                <Divider/>
+                <Paragraph>Run <Code>FlipsJdiff.exe -p "oldFile.vpx" "diffFile.diff"</Code> to create a patched table from a download.</Paragraph>
+            </TabPanel>
+        </Content>
+    </Tabs>    
+</Container>
+
+@code {
+
+
+    string selectedTab = "pinmame";
+    private void OnSelectedTabChanged(string name)
+    {
+        selectedTab = name;
+    }
+}

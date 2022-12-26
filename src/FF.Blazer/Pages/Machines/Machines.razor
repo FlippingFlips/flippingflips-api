@@ -1,0 +1,113 @@
+﻿@page "/machines"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using Microsoft.AspNetCore.Components.Web.Extensions.Head
+@attribute [Authorize]
+@inject IFlipsClientService flipsService
+
+
+<Microsoft.AspNetCore.Components.Web.Extensions.Head.Title Value="User Machines - Flipping Flips"/>
+
+<Container>
+
+    @if(UserMachinesResult == null)
+    {
+        <Paragraph>No Machines found</Paragraph>
+    }
+    else if (isBusy)
+    {
+        <FF.Blazer.Shared.LoadingComponents.AnimatedLoading/>   
+    }
+    else
+    {
+        <Row>
+            <Column ColumnSize="ColumnSize.Is12">
+                <Heading>User Machines</Heading>
+            </Column>
+        </Row>
+
+        <Row>
+            <DataGrid TItem="UserMachine"
+                      Data="@UserMachinesResult?.UserMachines"
+                      SelectionMode="DataGridSelectionMode.Single"
+                      TotalItems="10"
+                      PageSize="10"
+                      ShowPager
+                      ReadData="@OnReadData"
+                      SelectedRowChanged="((x) => SelectedRowChanged(x))"
+                      Responsive>
+                <DataGridCommandColumn />
+                <DataGridColumn Field="@nameof(UserMachine.Country)" Caption="Country" Sortable="false">
+                    <DisplayTemplate>
+                        @{
+                            var date = (context as UserMachine)?.Country;
+                            if (date != null)
+                            {
+                                <span class="flag-icon flag-icon-@date.ToLower() flag-icon-squared"></span>
+                            }
+                        }
+                    </DisplayTemplate>
+                </DataGridColumn>
+                <DataGridColumn Field="@nameof(UserMachine.Username)" Caption="UserName" Sortable="true">
+                    <DisplayTemplate>
+                        @{
+                            var userName = (context as UserMachine)?.Username;
+                            var userUrl = $"/machine/{userName}";
+                            if (userName != null)
+                            {
+                                <Blazorise.Link To="@userUrl">@userName</Blazorise.Link>
+                            }
+                        }
+                    </DisplayTemplate>
+                </DataGridColumn>
+                <DataGridColumn Field="@nameof(UserMachine.PlayerCnt)" Caption="Players" Sortable="false" />
+                <DataGridColumn Field="@nameof(UserMachine.MachineName)" Caption="Machine" Sortable="false" />
+            </DataGrid>
+        </Row>
+
+        @*@bind-SelectedRow="@selectedMachine"*@
+
+        <Row>
+            @if (selectedMachine != null)
+            {
+                <p>@selectedMachine.MachineName</p>
+            }
+        </Row>
+    }
+</Container>
+
+
+@code
+{
+    UserMachinesResult UserMachinesResult;
+    private UserMachine selectedMachine = null;
+    private bool isBusy = false;
+
+    void SelectedRowChanged(UserMachine um)
+    {
+        //TODO: Page usermachines
+        Console.WriteLine("row changed");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            isBusy = true;
+            //TODO: Add search filtering, paging user machines
+            UserMachinesResult = await flipsService.GetUserMachinesAsync(new UserMachinesQueryDto());
+        }
+        catch { }
+        finally{ isBusy = false; }
+    }
+
+    private async Task OnReadData(DataGridReadDataEventArgs<UserMachine> e)
+    {
+        Console.WriteLine("Reading data"); 
+        if (!e.CancellationToken.IsCancellationRequested)
+        {
+            //TODO: Page usermachines
+            await Task.CompletedTask;
+        }
+    }
+}

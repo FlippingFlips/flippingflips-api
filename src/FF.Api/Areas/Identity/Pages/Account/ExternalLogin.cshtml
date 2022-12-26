@@ -1,0 +1,59 @@
+﻿@page
+@using FF.Infrastructure.Data.Countries;
+@model ExternalLoginModel
+@{
+    ViewData["Title"] = "Register";
+}
+<h2 id="external-login-title">Confirm your @Model.ProviderDisplayName account.</h2>
+<hr />
+<p id="external-login-description" class="text-info">
+    You've successfully authenticated with <strong>@Model.ProviderDisplayName</strong>.    
+</p>
+<div class="row">
+    <div class="col-md-12">
+        <form asp-page-handler="Confirmation" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+            <h4>Create a new Flipping Flips account.</h4>
+            <p>Create an intial player name. Other players can be added to this machine later.</p>
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>            
+            <div class="form-floating">
+                <input asp-for="Input.UserName" class="form-control" title="This is a visible name to other players" />
+                <label asp-for="Input.UserName"></label>                
+                <span asp-validation-for="Input.UserName" class="text-danger"></span>                            
+            </div>
+            <div class="form-floating">
+                <input asp-for="Input.MachineName" class="form-control" title="Choose a name for your machine" />
+                <label asp-for="Input.MachineName"></label>                
+                <span asp-validation-for="Input.MachineName" class="text-danger"></span>
+            </div>
+            <div class="form-floating">
+                <input asp-for="Input.PlayerName" class="form-control" title="Default player name for your machine, you can have multiple players" />
+                <label asp-for="Input.PlayerName"></label>                
+                <span asp-validation-for="Input.PlayerName" class="text-danger"></span>
+            </div>
+            <div class="form-floating">
+                <input asp-for="Input.PlayerInitials" class="form-control" title="Player initials for your default player" />
+                <label asp-for="Input.PlayerInitials"></label>                
+                <span asp-validation-for="Input.PlayerInitials" class="text-danger"></span>
+            </div>
+            <div class="form-floating">                
+                <div class="form-control">
+                    <i id="selected-flag"></i>
+                    @Html.DropDownListFor(m => m.Input.CountryId, new SelectList(CountryData.Countries, "Code", "Name"))
+                </div>
+                <label asp-for="Input.CountryId"></label>
+                <span asp-validation-for="Input.CountryId" class="text-danger"></span>
+            </div>
+            <div class="form-floating">
+                <input asp-for="Input.Email" class="form-control" autocomplete="email" />
+                <label asp-for="Input.Email" class="form-label"></label>
+                <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>
+            <br/>
+            <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
+        </form>        
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

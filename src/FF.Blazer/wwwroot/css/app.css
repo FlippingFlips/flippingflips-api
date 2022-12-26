@@ -1,0 +1,22 @@
+﻿@import url('https://fonts.googleapis.com/css2?family=Acme&display=swap');
+
+/*Flips Edits*/
+.invalid-feedback {
+    font-size: x-small;
+    margin-top: 0;
+}
+
+.col-form-label {
+    padding-bottom: 0;
+    padding-top: 0;
+    font-size: x-small
+}
+
+.card-image-top{
+    max-width:2em;
+    width:2em;
+}
+
+a{
+    color:brown;
+}

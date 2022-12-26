@@ -1,0 +1,159 @@
+﻿@page "/mymachine"
+@using FF.Blazer.Client
+@using FF.Blazer.Components
+@using FF.Blazer.Shared.LoadingComponents
+@using System.Text.Json
+@attribute [Authorize]
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject IFlipsClientService Flips
+@inject IJSRuntime JSRuntime
+
+<Microsoft.AspNetCore.Components.Web.Extensions.Head.Title Value="@($"My Machine - Flipping Flips")" />
+
+@if (isBusy || UserMachineData == null)
+{
+    <AnimatedLoading />
+}
+else
+{
+    <Container Style="font-size:x-small">
+        
+        <Row>
+            <Column ColumnSize="ColumnSize.Is6.OnDesktop">
+                <Image Source="@FlipsIcons.MachineIcon"></Image> <br />
+                <Field Horizontal>
+                    <FieldLabel ColumnSize="ColumnSize.Is2">User Name</FieldLabel>
+                    <FieldBody ColumnSize="ColumnSize.Is10">
+                        <TextEdit Height="Height.Is75" Text="@UserMachineData.Username" ReadOnly />
+                    </FieldBody>
+                </Field>
+                <Field Horizontal>
+                    <FieldLabel ColumnSize="ColumnSize.Is2">Machine Name</FieldLabel>
+                    <FieldBody ColumnSize="ColumnSize.Is10">
+                        <TextEdit Height="Height.Is75" Text="@UserMachineData.MachineName" ReadOnly />
+                    </FieldBody>
+                </Field>
+                <Field Horizontal>
+                    <FieldLabel ColumnSize="ColumnSize.Is2">Machine Description</FieldLabel>
+                    <FieldBody ColumnSize="ColumnSize.Is10">
+                        <TextEdit Height="Height.Is75" Text="@UserMachineData.MachineDescription" ReadOnly />
+                    </FieldBody>
+                </Field>
+                <Field Horizontal>
+                    <FieldLabel ColumnSize="ColumnSize.Is2">Country</FieldLabel>
+                    <FieldBody ColumnSize="ColumnSize.Is10">
+                        <Image Source="@($"/flags/1x1/{UserMachineData.Country}.svg")" Style="max-width: 32px;" />
+                    </FieldBody>
+                </Field>
+            </Column>
+
+            <Column ColumnSize="ColumnSize.Is6.OnDesktop">
+                <Image Source="@FlipsIcons.MachineIcon"></Image> <br />
+                <Field Horizontal>
+                    <FieldLabel ColumnSize="ColumnSize.Is2">Api Key</FieldLabel>
+                    <FieldBody ColumnSize="ColumnSize.Is6" Height="Height.Is75">
+                        <TextEdit Height="Height.Is75" Text="@UserMachineData.ApiKey" ReadOnly />
+                        <Button Clicked="GenerateApiKey" Color="Color.Success">New Key</Button>
+                    </FieldBody>
+                </Field>
+                <Field Horizontal>
+                    <FieldLabel ColumnSize="ColumnSize.Is2">
+                        Settings
+                    </FieldLabel>
+                    <FieldBody ColumnSize="ColumnSize.Is10" Height="Height.Is75" Float="Float.End">
+                        <Button Clicked="DownloadConfigFile" Color="Color.Success">Download Settings</Button>
+                    </FieldBody>
+                </Field>
+            </Column>
+        </Row>
+
+        <Alert Color="Color.Primary" Visible>
+            <DataGrid TItem="Player"
+                  Data="@UserMachineData.Players"
+                  Responsive>
+                <DataGridCommandColumn />
+                <DataGridColumn Field="@nameof(Player.Initials)" Caption="Initials" Sortable="false" />
+                <DataGridColumn Field="@nameof(Player.Name)" Caption="Name" Sortable="false" />
+                <DataGridColumn Field="@nameof(Player.MachineDefault)" Caption="Default" Sortable="false" />
+            </DataGrid>
+        </Alert>
+
+    </Container>
+
+}
+
+@code
+{
+    private UserMachine UserMachineData;
+    RenderFragment machineIcon =@<img src="/img/pin-machine.svg" style="width:32px; height: 32px" />;
+    int delayTime = 2000;
+    private bool isBusy = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var result = await Flips.GetUserMachineAsync();
+            UserMachineData = result?.UserMachines?.First();
+            //Scores = await Flips.GetUserMachineScoresAsync();
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    protected async Task GenerateApiKey()
+    {
+        try
+        {
+            isBusy = true;
+            StateHasChanged();
+            UserMachineData.ApiKey = await Http.GetStringAsync("User/GenerateApiKey");
+            await Task.Delay(delayTime);
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+
+    protected async Task DownloadConfigFile()
+    {
+        var fileExportName = "FlippingFlipsSettings.json";
+        FlipsSettings settings = new();
+        settings.ApiKey = UserMachineData.ApiKey;
+        settings.ServerUrl = NavigationManager.BaseUri;
+        try
+        {
+            isBusy = true;
+            await Task.Delay(delayTime);
+            await JSRuntime.InvokeAsync<object>(
+                "FileSaveAs",
+                fileExportName,
+                JsonSerializer.Serialize(settings)
+            );
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+        finally
+        {
+            isBusy = false;
+        }
+    }
+}

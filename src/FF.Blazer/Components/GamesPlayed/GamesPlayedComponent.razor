@@ -1,0 +1,184 @@
+﻿@using FF.Shared.Model.Games;
+@using FF.Shared.ViewModel.Games;
+@using FF.Shared.ViewModel.Menus;
+@using FF.Shared.ViewModel.Scores;
+@attribute [Authorize]
+@inject IFlipsClientService flipsClient
+
+<Microsoft.AspNetCore.Components.Web.Extensions.Head.Title Value="@($"Games Played - Flipping Flips")" />
+
+@if (IsBusy)
+{
+    <FF.Blazer.Shared.LoadingComponents.AnimatedLoading Message="Loading games played..." />
+}
+else if (GamesPlayedResult?.TotalGamesPlayed > 0)
+{
+    <Column ColumnSize="ColumnSize.IsFull" Background="Background.Primary" Border="Border.Rounded">
+        <Row>
+
+            <Column ColumnSize="ColumnSize.IsFull" Margin="Margin.Is2.FromTop">
+                <Heading Size="HeadingSize.Is4" TextAlignment="TextAlignment.Center">Games Played</Heading>
+            </Column>
+
+            @if (ShowTitleFilter)
+            {
+                <Column ColumnSize="ColumnSize.Is3.OnDesktop">
+                    <Field>
+                        <TextEdit Placeholder="Title" @bind-Text=Query.Title KeyUp="@RunSearchInput" />
+                    </Field>
+                </Column>
+            }
+
+            @if (ShowUserFilter)
+            {
+                <Column ColumnSize="ColumnSize.Is3.OnDesktop">
+                    <Field>
+                        <TextEdit Placeholder="User" @bind-Text=Query.UserName KeyUp="@RunSearchInput" />
+                    </Field>
+                </Column>
+                <Column ColumnSize="ColumnSize.Is3.OnDesktop">
+                    <Field>
+                        <Check TValue="bool" @bind-bind-Checked=Query.GetUsersGames CheckedChanged="@RunSearch">Show my machine only</Check>
+                    </Field>
+                </Column>
+            }
+        </Row>
+
+        <Row>
+            <DataGrid TItem="GamePlayedSlimVm"
+                      Data="@GamesPlayedResult.GamesPlayed"
+                      ReadData="@OnReadData"
+                      TotalItems="@GamesPlayedResult.TotalGamesPlayed"
+                      PageSize="@Limit"
+                      SelectedRow="@SelectedRow"
+                      SelectedRowChanged="@OnSelectedRowChanged"
+                      ShowPager
+                      Responsive>
+                <DataGridCommandColumn />
+                <DataGridColumn Field="Id" Caption="#" Sortable="false" />
+                <DataGridColumn Field="Players" Caption="Players" Sortable="false" />
+                <DataGridColumn Field="GameTime" Caption="Time" Sortable="false" />
+                <DataGridColumn Field="BallsPerGame" Caption="Balls" Sortable="false" />
+                <DataGridColumn Field="Title" Caption="Title" />
+                <DataGridColumn Field="User" Caption="User" Sortable="false" />
+                <DataGridColumn Field="Posted" Caption="Date" Sortable="true" />
+            </DataGrid>
+        </Row>
+    </Column>
+
+    <Divider />
+    <GamePlayedComponent Id="@SelectedRowId" />
+}
+else
+{
+    <Paragraph>No Games Found</Paragraph>
+}
+
+@code
+{
+    [Parameter] public string GameId { get; set; }
+
+    /// <summary>
+    /// Need these filters as this is a component and if we are showing this on a game page then we don't want to filter the game tile, just use gameId
+    /// </summary>
+    [Parameter] public bool ShowUserFilter { get; set; } = true;
+
+    /// <summary>
+    /// Need these filters as this is a component and if we are showing this on a game page then we don't want to filter the game tile, just use gameId
+    /// </summary>
+    [Parameter] public bool ShowTitleFilter { get; set; } = true;
+
+    [Parameter] public bool ShowUserPlayedOnly { get; set; } = false;
+
+
+    public GamesPlayedResult GamesPlayedResult { get; set; } = new GamesPlayedResult();
+    public GamesPlayedQueryDto Query { get; set; } = new GamesPlayedQueryDto();
+    public GamePlayedSlimVm SelectedRow { get; set; }
+    public long SelectedRowId { get; set; }
+
+    public int Limit { get; set; } = 5;
+
+    public IEnumerable<RomMenuItemVm> GamePlayedSettings { get; set; }
+
+    bool IsBusy = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Query.Page = 1;
+            Query.Limit = Limit;
+            Query.GameId = GameId;
+            Query.GetUsersGames = ShowUserPlayedOnly;
+            ShowUserFilter = !ShowUserPlayedOnly;
+            await RunSearch();
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+            GamesPlayedResult = null;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    protected async Task RunSearchInput(KeyboardEventArgs eventCallback)
+    {
+        if (eventCallback.Code == "Enter")
+        {
+            await RunSearch();
+        }
+    }
+
+    protected async Task RunSearch()
+    {
+        GamesPlayedResult = await flipsClient.GetGamesPlayedAsync(Query);
+    }
+
+    private async Task OnReadData(DataGridReadDataEventArgs<GamePlayedSlimVm> e)
+    {
+        if (!e.CancellationToken.IsCancellationRequested)
+        {
+            try
+            {
+                //IsBusy = true;
+                Query.Page = e.Page;
+                Query.Limit = e.PageSize;
+
+                //todo: get column sorting
+                //var sortaableColumns = e.Columns.Where(x => x.SortField != null)
+                //.Select(x=>new {x.Field,  x.SortDirection});
+                //if(sortaableColumns!=null)
+                //    Console.WriteLine(string.Join(',', sortaableColumns));
+
+                await RunSearch();
+            }
+            catch (AccessTokenNotAvailableException exception)
+            {
+                exception.Redirect();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+    }
+
+    private Task OnSelectedRowChanged(GamePlayedSlimVm gamePlayedSlim)
+    {
+        Console.WriteLine("row changed: " + gamePlayedSlim?.Id);
+        SelectedRow = gamePlayedSlim;
+        SelectedRowId = gamePlayedSlim?.Id ?? 0;
+        return Task.CompletedTask;
+    }
+}

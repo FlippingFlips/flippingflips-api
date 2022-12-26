@@ -1,0 +1,53 @@
+﻿@page "/machine/{name}"
+@using FF.Blazer.Client
+@using FF.Shared.Model
+@inject IFlipsClientService Flips
+@attribute [Authorize]
+
+<div class="container">
+    <div class="row">
+        @if (UserMachine != null)
+        {
+            <Microsoft.AspNetCore.Components.Web.Extensions.Head.Title Value="@($"{UserMachine.Username}'s Machine - Flipping Flips")" />
+            <div class="col-12">
+                <Heading Size="HeadingSize.Is3">@UserMachine.Username's Machine</Heading>
+                <Heading Size="HeadingSize.Is4">@UserMachine.MachineDescription</Heading>
+                <Divider/>
+            </div>
+
+            <Heading Size="HeadingSize.Is4">@UserMachine.PlayerCnt Players</Heading>
+            <FF.Blazer.Shared.PlayerTables.PlayerTable Players="@UserMachine.Players?.ToArray()"/>
+
+            @*DataGrid of games played for this machine*@
+            <FF.Blazer.Components.GamesPlayed.GamesPlayedComponent ShowUserFilter=false ShowUserPlayedOnly="true"/>
+        }
+        else
+        {
+            <Microsoft.AspNetCore.Components.Web.Extensions.Head.Title Value="@($"Machine not found - Flipping Flips")" />
+            <div class="col-12 mt-5">
+                <h3 class="text-center"><span><i class="oi oi-x"></i> Machine not found</span></h3>
+            </div>
+        }
+
+    </div>
+</div>
+
+@code
+{
+    [Parameter] public string Name { get; set; }
+
+    UserMachine UserMachine;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            var UserMachines = await Flips.GetUserMachineByNameAsync(Name);
+            if(UserMachines?.UserMachines != null)
+            {
+                UserMachine = UserMachines.UserMachines.FirstOrDefault();
+            }
+        }
+        catch { }
+    }
+}

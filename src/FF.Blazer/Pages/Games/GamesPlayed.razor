@@ -1,0 +1,16 @@
+﻿@page "/GamesPlayed/"
+@using FF.Shared.Model.Games;
+@using FF.Shared.ViewModel.Games;
+@using FF.Shared.ViewModel.Menus;
+@attribute [Authorize]
+@inject IFlipsClientService flipsClient
+
+<Microsoft.AspNetCore.Components.Web.Extensions.Head.Title Value="@($"Games Played - Flipping Flips")" />
+
+<Container>
+    <FF.Blazer.Components.GamesPlayed.GamesPlayedComponent/>
+</Container>
+
+@code
+{    
+}

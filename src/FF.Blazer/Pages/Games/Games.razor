@@ -1,0 +1,117 @@
+﻿@page "/games"
+@using FF.Blazer.Client
+@using FF.Core.Features.Games.Query;
+@using FF.Shared.Model.Games;
+@using FF.Shared.ViewModel.Games;
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@attribute [Authorize]
+@inject HttpClient httpClient
+@inject IFlipsClientService flipsClient
+
+<Microsoft.AspNetCore.Components.Web.Extensions.Head.Title Value="@($"Games - Flipping Flips")" />
+
+<div class="container mt-4">
+    @if (isBusy)
+    {
+        <FF.Blazer.Shared.LoadingComponents.AnimatedLoading />
+    }
+    else if (GamesResult == null)
+    {
+        <Paragraph>No games found</Paragraph>
+    }
+    else
+    {
+        <Paragraph>Total games: @GamesResult.Total</Paragraph>
+        @if (GamesResult.Games?.Count() > 0)
+        {
+            <Row Background="Background.Secondary">
+                <DataGrid TItem="GameResultBaseVm" Narrow
+                          Data="@GamesResult.Games"
+                          ReadData="@OnReadData"
+                          TotalItems="@GamesResult.Total"
+                          PageSize="@Query.Limit"
+                          ShowPager
+                          Responsive>
+                    <DataGridCommandColumn />
+                    <DataGridColumn Field="Id" Caption="#" Sortable="false">
+                        <DisplayTemplate>
+                            @{
+                                var id = (context as GameResultBaseVm)?.Id;
+                                if (id != null)
+                                {
+                                    //@($"{id.Value.ToString(@"hh\:mm\:ss")}")
+                                    var url = $"/game/{id}";
+                                    <Blazorise.Link Title="View game played" To="@url"><Icon Name="IconName.Eye"></Icon></Blazorise.Link>
+                                }
+                            }
+                        </DisplayTemplate>
+                    </DataGridColumn>
+                    <DataGridColumn Field="@nameof(GameResultBaseVm.Title)" Caption="Title" Sortable="false"/>
+                    <DataGridColumn Field="@nameof(GameResultBaseVm.Version)" Caption="Version" Sortable="false"/>
+                    <DataGridColumn Field="FileName" Caption="FileName" Sortable="false" />
+                    <DataGridColumn Field="Author" Caption="Author" Sortable="false" />
+                    <DataGridColumn Field="GamesPlayed" Caption="Played" Sortable="false" />
+                    <DataGridColumn Field="TotalScores" Caption="Scores" Sortable="false" />
+                    <DataGridColumn Field="GameType" Caption="GameType" Sortable="false" />
+                    <DataGridColumn Field="GameSystem" Caption="GameSystem" Sortable="false" />
+                </DataGrid>
+            </Row>
+        }
+        else
+        {
+            <Paragraph>
+                No games found.
+            </Paragraph>
+        }
+    }
+</div>
+
+@code
+{
+    GamesQueryResult GamesResult;
+    GamesQueryDto Query = new();
+
+    bool isBusy = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RunSearch();   
+    }
+
+    protected async Task RunSearch()
+    {
+        try
+        {
+            GamesResult = await flipsClient.GetGames(Query);
+        }
+        catch { }
+        finally { isBusy = false; }
+    }
+
+    private async Task OnReadData(DataGridReadDataEventArgs<GameResultBaseVm> e)
+    {
+        if (!e.CancellationToken.IsCancellationRequested)
+        {
+            try
+            {
+                //IsBusy = true;
+                Query.Page = e.Page;
+                Query.Limit = e.PageSize;
+                await RunSearch();
+            }
+            catch (AccessTokenNotAvailableException exception)
+            {
+                exception.Redirect();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+            finally
+            {
+                isBusy = false;
+            }
+        }
+    }
+}

@@ -1,0 +1,24 @@
+﻿@page "/mymachine/setup"
+
+<Microsoft.AspNetCore.Components.Web.Extensions.Head.Title Value="@($"My Machine Setup - Flipping Flips")" />
+
+<Container>
+
+    <Column ColumnSize="ColumnSize.Is12" TextAlignment="TextAlignment.Center">
+        <Divider DividerType="DividerType.Dotted" />
+        <Heading Size="HeadingSize.Is2">My Machine - Setup</Heading>
+        <Divider DividerType="DividerType.Dotted" />
+    </Column>
+
+
+    <FF.Blazer.Pages.Help.Shared.FlipsController />
+
+    <br />
+    <Div>
+        Tables can be placed in a FlippingFlips directory inside the table directory. This is optional and not necessary to do this, you will need the settings file with the game that you can download from <Blazorise.Link To="/mymachine">MyMachine</Blazorise.Link>
+    </Div>
+</Container>
+
+@code {
+
+}

@@ -1,0 +1,18 @@
+﻿<Container>
+
+    <Row>
+        <Div Margin="Margin.Is5.FromTop" Class="text-center">
+            <img src="/img/pinball.svg" />
+        </Div>
+        <Div>
+            <Paragraph>
+                @Message
+            </Paragraph>
+        </Div>
+    </Row>
+</Container>
+
+@code
+{
+    [Parameter] public string Message { get; set; } = "Loading please wait...";
+}

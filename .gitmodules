@@ -1,0 +1,3 @@
+[submodule "modules/PinMAME.NvMaps"]
+	path = modules/PinMAME.NvMaps
+	url = git@github.com:horseyhorsey/PinMAME.NvMaps.git

@@ -1,0 +1,33 @@
+﻿@if(Players?.Count() > 0)
+{
+    <Table>
+        <TableHeader>
+            <TableRow>
+                <TableHeaderCell>Initials</TableHeaderCell>
+                <TableHeaderCell>Name</TableHeaderCell>
+                <TableHeaderCell>Created</TableHeaderCell>
+                <TableHeaderCell>Default</TableHeaderCell>
+            </TableRow>
+        </TableHeader>
+        <TableBody>
+            @foreach (var item in Players)
+            {
+                <TableRow>
+                    <TableRowHeader>
+                        <Blazorise.Link To="@($"/players/{item.Id}")">
+                            @item.Initials
+                        </Blazorise.Link>
+                    </TableRowHeader>
+                    <TableRowCell>@item.Name</TableRowCell>
+                    <TableRowCell>@item.Created.ToString("d")</TableRowCell>
+                    <TableRowCell>@item.MachineDefault</TableRowCell>
+                </TableRow>
+            }
+        </TableBody>
+    </Table>
+}
+
+@code 
+{
+    [Parameter] public Player[] Players { get; set; }
+}

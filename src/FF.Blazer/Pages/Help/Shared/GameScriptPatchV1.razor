@@ -1,0 +1,85 @@
+﻿<div class="row">
+    <div class="col-12 text-center">
+        <h3>How to patch Visual Pinball table script to post scores</h3>
+    </div>
+</div>
+<hr />
+
+<div class="row">
+    <div class="col-12">
+        The following is needed to make a game script compatible to post to the server. <br />
+    </div>
+    <div class="col-12">
+        <ul>
+            <li>Initialize controller script</li>
+            <li>Start Game - Create game in progress</li>
+            <li>End Game - Post scores</li>
+        </ul>
+    </div>
+</div>
+<hr />
+
+<div class="row">
+    <div class="col-12">
+        <div class="col-12">
+            <h5>1. Initialize controller with a flips game id</h5>
+            <small>This can be somewhere near the top of a script, the order isn't too important for this as nothing is called until setup game.</small>
+            <hr />
+        </div>
+        <code class="col-12">
+            <pre>                    
+                    Dim FlipsMenuKey : FlipsMenuKey = 9 ' This is the 8 key to enable player menu. keycode 9
+                    On Error Resume Next
+                    ExecuteGlobal GetTextFile ("FlippingFlipsScore.vbs")
+                    LoadFlipsScore "16648b42-1cdb-4319-a53f-4db01330d574" 'Load flips score with game id
+                    On Error Goto 0
+                </pre>
+        </code>
+        <div class="col-12 w-100">
+            <small class="text-danger p-1">No server calls are made here.</small>
+        </div>
+    </div>
+</div>
+<hr />
+
+<div class="row">
+    <div class="col-12">
+        <div class="col-12">
+            <h5>2. Find the game start to initialize a flips game</h5>
+            <small>This should be added when the game is started, Player 1 Ball 1.</small>
+            <small>When the game starts this will be called just before the start of the first ball</small>
+            <hr />
+        </div>
+        <code class="col-12">
+            <pre>                    
+                    'Flips scoring, 5 balls per game
+                    SetupGame(5)
+                </pre>
+        </code>
+        <div class="col-12 w-100">
+            <small class="text-danger p-1">SetupGame will only be invoked if players are selected prior to game starting.</small>
+        </div>
+    </div>
+</div>
+<hr />
+
+<div class="row">
+    <div class="col-12">
+        <div class="col-12">
+            <h5>3. Find the end of game to post the scores from player variables in script</h5>
+            <small>This can be found where the table script checks for hi scores, sets <code>GameStateIsActive = false, etc</code> </small><br />
+            <small>Different games use different variables to store the players scores. The following example used <code>PlayerRealScore</code></small>
+            <hr />
+        </div>
+        <code class="col-12">
+            <pre>                    
+                Dim postResult : postResult = False
+                postResult = PostScore(PlayerRealScore(0), PlayerRealScore(1), 0, 0) ' Posts score if FlipsGameStarted was enabled
+                </pre>
+        </code>
+        <div class="col-12 w-100">
+            <small class="text-danger p-1">Posting score will only be invoked if players are selected prior to game starting which sets <code>FlipsGameStarted</code></small>
+        </div>
+    </div>
+</div>
+<hr />

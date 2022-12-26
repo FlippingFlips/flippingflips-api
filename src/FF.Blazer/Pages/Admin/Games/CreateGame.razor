@@ -1,0 +1,199 @@
+﻿@page "/admin/games/create";
+@using FF.Blazer.Shared.LoadingComponents
+@using FF.Domain.Enum;
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@inject NavigationManager NavigationManager
+@inject HttpClient Http;
+@attribute [Authorize(Roles = "Admin,Manager")]
+@using System.IO
+
+<Microsoft.AspNetCore.Components.Web.Extensions.Head.Title Value="@($"Admin - Create Game - Flipping Flips")" />
+
+@if (IsBusy)
+{
+    <AnimatedLoading />
+}
+else
+{
+    <AuthorizeView>
+        <Authorized>
+            <Container>
+                <Row>
+                    <Column ColumnSize="ColumnSize.Is12.OnDesktop">
+                        <Card Margin="Margin.Is4.FromBottom">
+                            <CardHeader>
+                                <CardTitle>Create Game Form</CardTitle>
+                            </CardHeader>
+                            <CardBody>
+                                <Validations @ref="validationsCreateGameForm" Model="@GameVm" Mode="ValidationMode.Auto" ValidateOnLoad="false">
+                                    <Validation>
+                                        <Field Horizontal Style="form-group-sm">
+                                            <FieldLabel ColumnSize="ColumnSize.IsFull.OnTablet.Is3.OnDesktop">Title</FieldLabel>
+                                            <FieldBody ColumnSize="ColumnSize.IsFull.OnTablet.Is9.OnDesktop">
+                                                <TextEdit Placeholder="Game Title" @bind-Text=GameVm.Title Size="Size.ExtraSmall">
+                                                    <ValidationError />
+                                                </TextEdit>
+                                            </FieldBody>
+                                        </Field>
+                                    </Validation>
+                                    <Validation>
+                                        <Field Horizontal Style="form-group-sm">
+                                            <FieldLabel ColumnSize="ColumnSize.IsFull.OnTablet.Is3.OnDesktop">Description</FieldLabel>
+                                            <FieldBody ColumnSize="ColumnSize.IsFull.OnTablet.Is9.OnDesktop">
+                                                <MemoEdit Rows="3" Placeholder="Game Description" @bind-Text=GameVm.Description Size="Size.ExtraSmall">
+                                                    <ValidationError />
+                                                </MemoEdit>
+                                            </FieldBody>
+                                        </Field>
+                                    </Validation>
+                                    <Validation>
+                                        <Field Horizontal Style="form-group-sm">
+                                            <FieldLabel ColumnSize="ColumnSize.IsFull.OnTablet.Is3.OnDesktop">Authors</FieldLabel>
+                                            <FieldBody ColumnSize="ColumnSize.IsFull.OnTablet.Is9.OnDesktop">
+                                                <MemoEdit Rows="3" Placeholder="Authors. Comma separated" @bind-Text=GameVm.Author Size="Size.ExtraSmall">
+                                                    <ValidationError />
+                                                </MemoEdit>
+                                            </FieldBody>
+                                        </Field>
+                                    </Validation>
+                                    <Validation>
+                                        <Field Horizontal Style="form-group-sm">
+                                            <FieldLabel ColumnSize="ColumnSize.IsFull.OnTablet.Is3.OnDesktop">Year</FieldLabel>
+                                            <FieldBody ColumnSize="ColumnSize.IsFull.OnTablet.Is3.OnDesktop">
+                                                <NumericEdit @bind-Value=GameVm.Year TValue="int" Size="Size.ExtraSmall">
+                                                    <ValidationError />
+                                                </NumericEdit>
+                                            </FieldBody>
+                                            <FieldLabel ColumnSize="ColumnSize.IsFull.OnTablet.Is3.OnDesktop">Version</FieldLabel>
+                                            <FieldBody ColumnSize="ColumnSize.IsFull.OnTablet.Is3.OnDesktop">
+                                                <TextEdit Placeholder="File Version" @bind-Text=GameVm.Version Size="Size.ExtraSmall">
+                                                    <ValidationError />
+                                                </TextEdit>
+                                            </FieldBody>
+                                            <FieldLabel ColumnSize="ColumnSize.IsFull.OnTablet.Is3.OnDesktop">Players</FieldLabel>
+                                            <FieldBody ColumnSize="ColumnSize.IsFull.OnTablet.Is3.OnDesktop">
+                                                <NumericEdit Placeholder="Players" TValue="int" @bind-Text=GameVm.Players Size="Size.ExtraSmall">
+                                                    <ValidationError />
+                                                </NumericEdit>
+                                            </FieldBody>
+                                        </Field>
+                                    </Validation>
+                                    <Field Horizontal Style="form-group-sm">
+                                        <FieldLabel ColumnSize="ColumnSize.IsFull.OnTablet.Is3.OnDesktop">Select Types</FieldLabel>
+                                        <FieldBody ColumnSize="ColumnSize.IsFull.OnTablet.Is9.OnDesktop">
+                                            <SelectList Multiple TItem="GameTypeSelect"
+                                                        Data="@GameVm.GameTypes"
+                                                        TValue="GameType"
+                                                        TextField="((x)=>x.Key)"
+                                                        ValueField="((x)=>x.Value)"
+                                            @bind-SelectedValues="@GameVm.SelectedGameTypes" />
+                                        </FieldBody>
+                                    </Field>
+                                    <Field Horizontal Style="form-group-sm">
+                                        <FieldLabel ColumnSize="ColumnSize.IsFull.OnTablet.Is3.OnDesktop">Sim / Machine</FieldLabel>
+                                        <FieldBody ColumnSize="ColumnSize.IsFull.OnTablet.Is9.OnDesktop">
+                                            <Select SelectedValue="@GameVm.SelectedGameSystem">
+                                                @foreach (var sys in Enum.GetValues(typeof(GameSystem)))
+                                                {
+                                                    <SelectItem Value="@sys">@sys</SelectItem>
+                                                }
+                                            </Select>
+                                        </FieldBody>
+                                    </Field>
+                                    <Validation>
+                                        <Field Horizontal Style="form-group-sm">
+                                            <FieldLabel ColumnSize="ColumnSize.IsFull.OnTablet.Is3.OnDesktop">Download Page</FieldLabel>
+                                            <FieldBody ColumnSize="ColumnSize.IsFull.OnTablet.Is9.OnDesktop">
+                                                <TextEdit Placeholder="Download page" @bind-Text=GameVm.FileUrl Size="Size.ExtraSmall">
+                                                    <ValidationError />
+                                                </TextEdit>
+                                            </FieldBody>
+                                        </Field>
+                                    </Validation>
+                                    <Validation>
+                                        <Field Horizontal Style="form-group-sm">
+                                            <FieldLabel ColumnSize="ColumnSize.IsFull.OnTablet.Is3.OnDesktop">File Name</FieldLabel>
+                                            <FieldBody ColumnSize="ColumnSize.IsFull.OnTablet.Is9.OnDesktop">
+                                                <TextEdit Placeholder="Table File Name (vpx, fpt)" @bind-Text=GameVm.FileName Size="Size.ExtraSmall">
+                                                    <ValidationError />
+                                                </TextEdit>
+                                            </FieldBody>
+                                        </Field>
+                                    </Validation>
+                                    <Validation>
+                                        <Field Horizontal Style="form-group-sm">
+                                            <FieldLabel ColumnSize="ColumnSize.IsFull.OnTablet.Is3.OnDesktop">CRC</FieldLabel>
+                                            <FieldBody ColumnSize="ColumnSize.IsFull.OnTablet.Is9.OnDesktop">
+                                                <TextEdit Placeholder="File CRC" @bind-Text=GameVm.CRC Size="Size.ExtraSmall">
+                                                    <ValidationError />
+                                                </TextEdit>
+                                            </FieldBody>
+                                        </Field>
+                                    </Validation>
+                                    <Validation>
+                                        <Field Horizontal Style="form-group-sm">
+                                            <FieldLabel ColumnSize="ColumnSize.IsFull.OnTablet.Is3.OnDesktop">FilePatchUrl</FieldLabel>
+                                            <FieldBody ColumnSize="ColumnSize.IsFull.OnTablet.Is9.OnDesktop">
+                                                <TextEdit Placeholder="Download link for auto patching" @bind-Text=GameVm.FilePatchUrl Size="Size.ExtraSmall">
+                                                    <ValidationError />
+                                                </TextEdit>
+                                            </FieldBody>
+                                        </Field>
+                                    </Validation>
+                                    <Validation>
+                                        <Field Horizontal Style="form-group-sm">
+                                            <FieldLabel ColumnSize="ColumnSize.IsFull.OnTablet.Is3.OnDesktop">Patched File Name</FieldLabel>
+                                            <FieldBody ColumnSize="ColumnSize.IsFull.OnTablet.Is9.OnDesktop">
+                                                <TextEdit Placeholder="Table File Name (vpx, fpt)" @bind-Text=GameVm.FileNamePatched Size="Size.ExtraSmall">
+                                                    <ValidationError />
+                                                </TextEdit>
+                                            </FieldBody>
+                                        </Field>
+                                    </Validation>
+                                    <Validation>
+                                        <Field Horizontal Style="form-group-sm">
+                                            <FieldLabel ColumnSize="ColumnSize.IsFull.OnTablet.Is3.OnDesktop">CRC Patched</FieldLabel>
+                                            <FieldBody ColumnSize="ColumnSize.IsFull.OnTablet.Is9.OnDesktop">
+                                                <TextEdit Placeholder="Patched File CRC" @bind-Text=GameVm.CRCPatched Size="Size.ExtraSmall">
+                                                    <ValidationError />
+                                                </TextEdit>
+                                            </FieldBody>
+                                        </Field>
+                                    </Validation>
+
+
+                                    <Field Horizontal Style="form-group-sm">
+                                        <FieldLabel ColumnSize="ColumnSize.IsFull.OnTablet.Is3.OnDesktop">Translite</FieldLabel>
+                                        <FieldBody ColumnSize="ColumnSize.IsFull.OnTablet.Is9.OnDesktop">
+                                            <InputFile OnChange="@LoadTransliteFile" multiple />
+                                        </FieldBody>
+                                    </Field>
+
+                                    <Field Horizontal Style="form-group-sm">
+                                        <FieldLabel ColumnSize="ColumnSize.IsFull.OnTablet.Is3.OnDesktop">Screenshot</FieldLabel>
+                                        <FieldBody ColumnSize="ColumnSize.IsFull.OnTablet.Is9.OnDesktop">
+                                            <InputFile OnChange="@LoadFiles" multiple />
+                                        </FieldBody>
+                                    </Field>
+                                    <Field Horizontal JustifyContent="JustifyContent.End">
+                                        <FieldBody ColumnSize="ColumnSize.Is2.Is12.WithOffset">
+                                            <Button Color="Color.Success" Clicked="Submit" Size="Size.ExtraSmall">Submit</Button>
+                                        </FieldBody>
+                                    </Field>
+                                </Validations>
+                            </CardBody>
+                        </Card>
+                    </Column>
+
+                    <Column ColumnSize="ColumnSize.Is6.OnDesktop">
+
+                    </Column>
+                </Row>
+            </Container>
+        </Authorized>
+        <NotAuthorized>
+            <p>You are not authorized to view this</p>
+        </NotAuthorized>
+    </AuthorizeView>
+}

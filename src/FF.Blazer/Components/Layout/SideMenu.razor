@@ -1,0 +1,147 @@
+﻿@inject NavigationManager Navigation
+@inject SignOutSessionStateManager SignOutManager
+
+<Bar Breakpoint="Breakpoint.Desktop" NavigationBreakpoint="Breakpoint.Tablet" ThemeContrast="ThemeContrast.Dark"  
+Background="Background.Primary"
+     Mode="BarMode.VerticalInline" CollapseMode="BarCollapseMode.Small">
+    <BarToggler />
+    <BarBrand>
+        <BarItem>
+            <BarLink To="/">
+                <BarIcon IconName="pinballIcon" />
+                Flipping Flips
+            </BarLink>
+        </BarItem>
+    </BarBrand>
+    <BarMenu>
+        <BarStart>
+            <BarItem>
+                <BarDropdown @bind-Visible="pagesBarVisible">
+                    <BarDropdownToggle>
+                        <BarIcon IconName="IconName.Users" />
+                        Account
+                    </BarDropdownToggle>
+                    <AuthorizeView>
+                        <Authorized>
+                            <BarDropdownMenu Background="Background.Primary">
+                                <BarDropdownItem To="authentication/logout" Clicked="BeginSignOut">Logout</BarDropdownItem>
+                            </BarDropdownMenu>
+                        </Authorized>
+                        <NotAuthorized>
+                            <BarDropdownMenu Background="Background.Primary">
+                                <BarDropdownItem To="authentication/login">Login</BarDropdownItem>
+                            </BarDropdownMenu>
+                            <BarDropdownMenu Background="Background.Primary">
+                                <BarDropdownItem To="authentication/register">Register</BarDropdownItem>
+                            </BarDropdownMenu>
+                        </NotAuthorized>
+                    </AuthorizeView>
+                </BarDropdown>
+            </BarItem>
+            <AuthorizeView>
+                <Authorized>
+                    <BarItem>
+                        <BarDropdown @bind-Visible="machineBarVisible">
+                            <BarDropdownToggle>
+                                <BarIcon IconName="flipperIcon" />
+                                My Machine
+                            </BarDropdownToggle>
+                            <BarDropdownMenu Background="Background.Primary">
+                                <BarDropdownItem To="/mymachine/setup">Setup</BarDropdownItem>
+                            </BarDropdownMenu>
+                            <BarDropdownMenu Background="Background.Primary">
+                                <BarDropdownItem To="/mymachine">My Machine</BarDropdownItem>
+                            </BarDropdownMenu>
+                        </BarDropdown>
+                    </BarItem>
+                    <BarItem>
+                        <BarDropdown @bind-Visible="machinesBarVisible">
+                            <BarDropdownToggle>
+                                <BarIcon IconName="machineIcon" />
+                                Machines
+                            </BarDropdownToggle>
+                            <BarDropdownMenu Background="Background.Primary">
+                                <BarDropdownItem To="/machines/">Machines</BarDropdownItem>
+                            </BarDropdownMenu>
+                        </BarDropdown>
+                    </BarItem>
+                    <BarItem>
+                        <BarDropdown @bind-Visible="gamesBarVisible">
+                            <BarDropdownToggle>
+                                <BarIcon IconName="pinballIcon" />
+                                Games
+                            </BarDropdownToggle>
+                            <BarDropdownMenu Background="Background.Primary">
+                                <BarDropdownItem To="/games/">Tables</BarDropdownItem>
+                            </BarDropdownMenu>
+                        </BarDropdown>
+                    </BarItem>
+                    <BarItem>
+                        <BarDropdown @bind-Visible="guidesBarVisible">
+                            <BarDropdownToggle>
+                                <BarIcon IconName="IconName.Eye" TextColor="TextColor.Secondary" />
+                                Guides
+                            </BarDropdownToggle>
+                            <BarDropdownMenu Background="Background.Primary">
+                                <BarDropdownItem To="/help/guide">Help</BarDropdownItem>
+                            </BarDropdownMenu>
+                            <BarDropdownMenu Background="Background.Primary">
+                                <BarDropdownItem To="/help/guide/authoring">Authoring</BarDropdownItem>
+                            </BarDropdownMenu>
+                        </BarDropdown>
+                    </BarItem>
+                </Authorized>
+            </AuthorizeView>
+            <AuthorizeView Roles="Admin,Manager">
+                <Authorized >
+                    <BarItem>
+                        <BarDropdown @bind-Visible="adminBarVisible">
+                            <BarDropdownToggle>
+                                <BarIcon IconName="IconName.Server" Class="width:32px;height32px" />
+                                Admin
+                            </BarDropdownToggle>
+                            <BarDropdownMenu Background="Background.Primary">
+                                <BarDropdownItem To="/admin/games/create">Add Game</BarDropdownItem>
+                            </BarDropdownMenu>
+                        </BarDropdown>
+                    </BarItem>
+                </Authorized>
+            </AuthorizeView>
+        </BarStart>
+
+        @*bottom sidebar items*@
+        <BarEnd>
+            <BarItem>
+                <BarDropdown>
+                    <BarDropdownToggle>
+                        <BarIcon IconName="pinballIcon" />
+                        Help
+                    </BarDropdownToggle>
+                    <BarDropdownMenu Background="Background.Primary">
+                        <BarDropdownItem To="/help/about">
+                            About
+                        </BarDropdownItem>
+                    </BarDropdownMenu>
+                </BarDropdown>
+            </BarItem>
+        </BarEnd>
+    </BarMenu>
+</Bar>
+@code {
+    private bool pagesBarVisible = false;
+    private bool machineBarVisible = false;
+    private bool machinesBarVisible = false;
+    private bool gamesBarVisible = false;
+    private bool adminBarVisible = false;
+    private bool guidesBarVisible = false;
+
+    RenderFragment pinballIcon =@<img src="/img/pinball.svg" style="width:32px; height: 32px" />;
+    RenderFragment machineIcon =@<img src="/img/pin-machine.svg" style="width:32px; height: 32px" />;
+    RenderFragment flipperIcon =@<img src="/img/flipper.svg" style="width:32px; height: 32px" />;
+
+    private async Task BeginSignOut(MouseEventArgs args)
+    {
+        await SignOutManager.SetSignOutState();
+        Navigation.NavigateTo("/");
+    }
+}

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="960"
+   height="350"
+   viewBox="0 0 253.99999 92.604169"
+   version="1.1"
+   id="svg4539"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
+   sodipodi:docname="logo.svg">
+  <defs
+     id="defs4533">
+    <inkscape:path-effect
+       effect="spiro"
+       id="path-effect5111"
+       is_visible="true" />
+    <inkscape:path-effect
+       effect="spiro"
+       id="path-effect5104"
+       is_visible="true" />
+    <inkscape:path-effect
+       effect="bspline"
+       id="path-effect5098"
+       is_visible="true"
+       weight="33.333333"
+       steps="2"
+       helper_size="0"
+       apply_no_weight="true"
+       apply_with_weight="true"
+       only_selected="false" />
+    <pattern
+       y="0"
+       x="0"
+       height="6"
+       width="6"
+       patternUnits="userSpaceOnUse"
+       id="EMFhbasepattern" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.7"
+     inkscape:cx="478.60789"
+     inkscape:cy="105.36002"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     units="px"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata4536">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-204.39582)">
+    <text
+       id="text5094"
+       y="283.70386"
+       x="59.269375"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.54060745px;line-height:1.54999995;font-family:'Bungee Shade';-inkscape-font-specification:'Bungee Shade';letter-spacing:0.47965658px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.36064398;"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:34.62182617px;font-family:'Bungee Shade';-inkscape-font-specification:'Bungee Shade';stroke-width:0.36064398;fill:#000000;"
+         y="283.70386"
+         x="59.269375"
+         id="tspan5092"
+         sodipodi:role="line">FLIPS</tspan></text>
+    <text
+       transform="translate(0,204.39582)"
+       xml:space="preserve"
+       style="display:inline;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:12.37600327px;line-height:1.54999995;font-family:'Bungee Shade';-inkscape-font-specification:'Bungee Shade';letter-spacing:0.51437765px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.3867501;"
+       id="text5086"
+       x="-4.2763124"
+       y="4.0582933"><textPath
+         xlink:href="#path5102"
+         id="textPath5671"><tspan
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:37.12801361px;font-family:'Bungee Shade';-inkscape-font-specification:'Bungee Shade';stroke-width:0.3867501;fill:#000000;"
+   id="tspan5084">FLIPPING</tspan></textPath></text>
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="paths"
+     style="display:none">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 49.289974,256.85216 c 20.1678,-14.9576 44.868323,-23.71719 69.953786,-24.80784 28.63356,-1.24491 57.60601,7.58898 80.67384,24.59797"
+       id="path5102"
+       inkscape:connector-curvature="0"
+       inkscape:path-effect="#path-effect5104"
+       inkscape:original-d="m 49.289974,256.85216 c 45.970621,0.0888 23.983682,-24.8972 69.953786,-24.80784 45.97009,0.0893 76.30871,22.63773 80.67384,24.59797"
+       transform="matrix(1.4079797,0,0,1.513544,-50.371975,-321.07743)"
+       sodipodi:nodetypes="ccc" />
+  </g>
+</svg>

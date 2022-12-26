@@ -1,0 +1,50 @@
+﻿@using FF.Blazer.Client
+<CascadingAuthenticationState>
+    <Blazorise.ThemeProvider Theme="@theme">
+        <Router AppAssembly="typeof(App).Assembly">
+            <Found Context="routeData">
+                <AuthorizeRouteView RouteData="@routeData" DefaultLayout="typeof(FF.Blazer.Layouts.MainLayout)">
+                    <Authorizing>
+                        <div class="container mt-1">
+                            <FF.Blazer.Shared.LoadingComponents.AnimatedLoading />
+                            <br />
+                            Authorizing...
+                        </div>
+                    </Authorizing>
+                    <NotAuthorized>
+                        @if (!context.User.Identity.IsAuthenticated)
+                        {
+                            <RedirectToLogin />
+                        }
+                        else
+                        {
+                            <p>You are not authorized to access this resource.</p>
+                        }
+                    </NotAuthorized>
+                </AuthorizeRouteView>
+            </Found>
+            <NotFound>
+                <p>Sorry, there's nothing at this address.</p>
+            </NotFound>
+        </Router>
+        <MessageProvider />
+        <NotificationProvider />
+        <PageProgressProvider />
+    </Blazorise.ThemeProvider>
+</CascadingAuthenticationState>
+
+@code {
+    private Theme theme = new Theme
+        {
+            ColorOptions = new ThemeColorOptions
+            {
+                Primary = "#45B1E8",
+                Secondary = "#A65529",
+                Link = "#ffff00"
+            },
+            BodyOptions = new ThemeBodyOptions
+            {
+                BackgroundColor = "#a3a3a3"                 
+            }             
+        };
+}

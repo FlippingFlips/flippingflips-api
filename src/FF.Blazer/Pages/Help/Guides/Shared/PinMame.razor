@@ -1,0 +1,164 @@
+﻿<Accordion>
+    <Collapse Visible="@collapse1Visible">
+        <CollapseHeader>
+            <Heading Size="HeadingSize.Is5">
+                <Button Clicked="@(()=>collapse1Visible = !collapse1Visible)">First Steps</Button>
+            </Heading>
+        </CollapseHeader>
+        <CollapseBody>            
+            <Paragraph>Load your copied version of table into the editor and find the romname for this table which is usually on the <Code>cGameName</Code> variable.</Paragraph>
+            <Paragraph>Flips basically works by finding a GameStart and GameEnd, so these will be different per each game. Some Williams maybe the same or similar. I made this guide while setting up BSD-Dracula.</Paragraph>
+        </CollapseBody>
+    </Collapse>
+
+    <Collapse Visible="@collapse2Visible">
+        <CollapseHeader>
+            <Heading Size="HeadingSize.Is5">
+                <Button Clicked="@(()=>collapse2Visible = !collapse2Visible)">Game Start / End</Button>
+            </Heading>
+        </CollapseHeader>
+        <CollapseBody>
+            <Paragraph Italic=true TextColor="TextColor.Danger">Note: Script text here can be clicked and copied to the clipboard</Paragraph>
+            <Paragraph>1. Add <Code CopyToClipboard="true" >const UseVPMNVRAM = true ' Flips PinMame game</Code> to the top of the script but underneath `Option Explicit` calls.</Paragraph>
+            <Paragraph>2. Add the following sub helper to find the address for game start and ending. I check for a value above 7000 which has been good so far.</Paragraph>
+            <Paragraph>
+                <pre style="color:#d63384"><Code CopyToClipboard="true" >Set NVRAMCallback = GetRef("OnNvCallBackChanged")
+Sub OnNvCallBackChanged(VPMNVRAM)
+    For I = 0 To UBound(VPMNVRAM)
+        if VPMNVRAM(I,0) > 7000 Then ' Game Over
+            Debug.Print VPMNVRAM(I,0)
+        end if
+    Next
+End Sub
+</Code>
+</pre>
+            </Paragraph>
+            <Paragraph>3. Run the game and open the debug window. To open the window push Q for quit and select debug in the dialog box.</Paragraph>
+            <Paragraph>4. Watch the values after you start the game. I got <Code>8072, 8073, 8074, 8075, 8076</Code></Paragraph>
+            <Paragraph>5. Watch the values after you end the game by the match sequence. I got <Code>7516,7519,7525,7533,7733</Code></Paragraph>
+            <Paragraph>6. I played twice and got slight different at the end of game <Code>7516,7519,7525,7532,7733</Code></Paragraph>
+        </CollapseBody>
+    </Collapse>
+
+    <Collapse Visible="@collapse3Visible">
+        <CollapseHeader>
+            <Heading Size="HeadingSize.Is5">
+                <Button Clicked="@(()=>collapse3Visible = !collapse3Visible)">Game Start / End Tests</Button>
+            </Heading>
+        </CollapseHeader>
+        <CollapseBody>
+            <Paragraph>Now test the values you've found with a different script method by replacing the old. Watch the debug window again and you should see it print game start and end in the correct places.</Paragraph>
+            <pre style="color:#d63384">
+                <Code CopyToClipboard=true >
+const UseVPMNVRAM = true ' Flips PinMame game
+Dim NvGameStart : NvGameStart = 8072 ' Game started address
+Dim NvGameEnd   : NvGameEnd   = 7516 ' Game ended address
+                </Code>
+            </pre>
+            <pre style="color:#d63384">
+            <Code CopyToClipboard=true  >
+Set NVRAMCallback = GetRef("OnNvCallBackChanged")
+Dim TableGameStarted
+Sub OnNvCallBackChanged(VPMNVRAM)
+    Dim I
+    For I = 0 To UBound(VPMNVRAM)
+        if VPMNVRAM(I,0) = NvGameEnd Then ' Game Over
+            if TableGameStarted Then
+                TableGameStarted = false
+                Debug.print "NV:Game Ended"					
+            End If			
+        elseif VPMNVRAM(I,0) = NvGameStart Then
+            if not TableGameStarted Then  'Start game in progress if not already started
+                TableGameStarted = true
+                Debug.print "NV:Game Setup"
+            end if
+        end if
+    Next
+End Sub
+                </Code>
+            </pre>
+        </CollapseBody>
+    </Collapse>
+
+    <Collapse Visible="collapse4Visible">
+        <CollapseHeader>
+            <Heading Size="HeadingSize.Is5">
+                <Button Clicked="@(()=>collapse4Visible = !collapse4Visible)">Flipping Flips - Events Script</Button>
+            </Heading>
+        </CollapseHeader>
+        <CollapseBody>
+            <Paragraph>Now that we have the game events we can add the flips script to the table. Add the Flips script at the top.</Paragraph>
+            <Paragraph>1. Initialize FlippingFlipsScore.vbs with gameId and filename. This requires the game to be on the server.</Paragraph>
+            <pre style="color:#d63384">
+            <Code CopyToClipboard=true >
+const UseVPMNVRAM = true ' Flips PinMame game
+Dim NvGameStart : NvGameStart = 8072 ' Value for game started, is called 4 times if add 4 players
+Dim NvGameEnd : NvGameEnd = 7516     ' Value for game finished or gamesplayed
+'Load flips score script and run the controller with game id and api key. Both flippers to activate menu
+ExecuteGlobal GetTextFile("FlippingFlipsScore.vbs")
+LoadFlipsScore "89559b4c-08e0-4f03-a74b-a6ba4c7414dd", Table1.FileName ' GameId, TableFileName
+GetScores 'Get scores from server based on settings
+On Error Goto 0
+                </Code>
+            </pre>
+            <Paragraph>2. Game Start / Ended event section</Paragraph>
+            <pre style="color:#d63384">
+<Code CopyToClipboard=true >
+' listens for changes in nvram
+Set NVRAMCallback = GetRef("OnNvCallBackChanged")
+Sub OnNvCallBackChanged(VPMNVRAM)
+    Dim I
+    For I = 0 To UBound(VPMNVRAM)
+        if VPMNVRAM(I,0) = NvGameEnd Then ' Game Over
+            if TableGameStarted Then
+                Debug.print "NV:Game Ended"	
+                PostScoreNv(Controller.NVRAM) 'Post score to server, score is posted after match sequence
+                Debug.print "Posted Scores"
+                GetScores
+            End If			
+        elseif Cint(VPMNVRAM(I,0)) = NvGameStart Then			
+            if not TableGameStarted Then  'Start game in progress if not already started
+                SetupGame(3)
+                Debug.print "NV:Game Setup"
+            end if
+        end if
+    Next
+End Sub
+                </Code>
+            </pre>
+            <Paragraph>Menu Overlay and Keyboard events</Paragraph>
+            <Paragraph>3. Copy UI layers to the table. See example file that is in the controller setup.</Paragraph>
+            <Paragraph>4. Keyboard KeyDown. Add into the events before any other key presses</Paragraph>
+            <Paragraph>The events are for showing a user menu for adding players to the game and creating players from VP onto the server.</Paragraph>
+            <pre style="color:#d63384">
+<Code CopyToClipboard=true >
+    MenuControlsKeyDown(keycode) '
+    if FlipsMenuVisible then exit sub ' don't process any game controls in menu
+    ' Just left the player menu, don't start game straight away
+    If FlipsJustExitedMenu = 1 Then FlipsJustExitedMenu = 0 : Exit Sub
+                </Code>
+            </pre>
+<Paragraph>5. Keyboard KeyUp</Paragraph>
+            <pre style="color:#d63384">
+<Code CopyToClipboard=true>
+    MenuControlsKeyUp(keycode) '
+    if FlipsMenuVisible then exit sub ' don't process any game controls in menu
+                </Code>
+            </pre>
+        </CollapseBody>
+    </Collapse>
+</Accordion>
+
+@code {
+    bool collapse1Visible = false;
+    bool collapse2Visible = false;
+    bool collapse3Visible = false;
+    bool collapse4Visible = false;
+
+    [Inject] INotificationService NotificationService { get; set; }
+
+    Task ShowCopied()
+    {
+        return NotificationService.Info("", "Copied");
+    }
+}

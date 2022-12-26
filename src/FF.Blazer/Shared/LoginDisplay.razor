@@ -1,0 +1,33 @@
+﻿
+
+
+@*@inject SignOutSessionStateManager SignOutManager*@
+
+<AuthorizeView>
+    <Authorized>
+        @*<a class="btn btn-block nav-link btn btn-link" href="authentication/profile">@context.User.Identity.Name</a>*@        
+        <NavLink href="/account/profile" class="nav-tab" Match="NavLinkMatch.All">
+            <i class="oi oi-person top-bar-openicon"></i>
+            <div>@context.User.Identity.Name</div>
+        </NavLink>
+        <NavLink class="nav-tab" href="Logout" Match="NavLinkMatch.All">
+            <i class="oi oi-account-logout top-bar-openicon"></i>
+            <button class="btn bg-transparent" style="color:white;font-size:0.9em">LOG OUT</button>
+        </NavLink>        
+    </Authorized>
+    <NotAuthorized>
+        <NavLink href="/account/register" class="nav-tab" Match="NavLinkMatch.All">
+            <i class="oi oi-key top-bar-openicon"></i>
+            <div>Register</div>
+        </NavLink>
+        <NavLink href="/account/login" class="nav-tab" Match="NavLinkMatch.All">
+            <i class="oi oi-lock-locked top-bar-openicon"></i>
+            <br />
+            <div>Login</div>
+        </NavLink>
+        <NavLink href="/help/about" class="nav-tab" Match="NavLinkMatch.All">
+            <i class="oi oi-question-mark top-bar-openicon"></i>
+            <div>Help</div>
+        </NavLink>
+    </NotAuthorized>
+</AuthorizeView>

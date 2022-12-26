@@ -1,0 +1,77 @@
+﻿@inherits LayoutComponentBase
+<!--<div class="page">-->
+@*<div class="sidebar">
+        <NavMenu />
+    </div>*@
+
+
+<!--</div>-->
+
+<Layout>
+    <LayoutHeader Background="@Background.Dark">
+        @*<img src="/img/logo.svg" />*@        
+    </LayoutHeader>
+    <LayoutContent>
+        @Body
+    </LayoutContent>
+    <LayoutFooter>
+        Footer
+    </LayoutFooter>
+</Layout>
+
+@*<div class="top-bar">
+
+
+</div>*@
+
+@*<a class="logo" href="/">
+        <img src="/img/logo.svg" />
+    </a>*@
+
+@*<Button Clicked="@(()=>OnThemeColorChanged("#ff0000"))">Change theme</Button>
+    <LoginDisplay />*@
+
+@*    <AuthorizeView>
+        <NavLink href="/mymachine" class="nav-tab" Match="NavLinkMatch.All">
+            <img src="img/pin-machine.svg" />
+            <div>Machine</div>
+        </NavLink>
+        <NavLink href="/machines" class="nav-tab" Match="NavLinkMatch.All">
+            <img src="img/pin-machine.svg" />
+            <div>Machines</div>
+        </NavLink>
+        <NavLink href="/games" class="nav-tab" Match="NavLinkMatch.All">
+            <img src="img/pinball.svg" />
+            <div>Games</div>
+        </NavLink>
+        <NavLink href="/help/guide" class="nav-tab" Match="NavLinkMatch.All">
+            <img src="img/flipper.svg" />
+            <div>Patch Guide</div>
+        </NavLink>
+    </AuthorizeView>
+    <AuthorizeView Roles="Admin">
+        <NavLink href="/admin/games/create" class="nav-tab" Match="NavLinkMatch.All">
+            <img src="img/pin-machine.svg" />
+            <div>Ad:Game</div>
+        </NavLink>
+    </AuthorizeView>
+
+    <LoginDisplay />*@
+
+@code
+{
+    void OnThemeColorChanged(string value)
+    {
+        if (Theme?.ColorOptions != null)
+            Theme.ColorOptions.Primary = value;
+
+        if (Theme?.BackgroundOptions != null)
+        {
+            Theme.BackgroundOptions.Primary = value;
+        }       
+
+        Theme.ThemeHasChanged();
+    }
+
+    [CascadingParameter] Theme Theme { get; set; }
+}

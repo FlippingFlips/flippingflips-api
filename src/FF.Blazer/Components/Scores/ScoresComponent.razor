@@ -1,0 +1,200 @@
+﻿@using FF.Shared.Model.Games;
+@using FF.Shared.Model.Scores;
+@using FF.Shared.ViewModel.Games;
+@using FF.Shared.ViewModel.Menus;
+@using FF.Shared.ViewModel.Scores;
+@attribute [Authorize]
+@inject IFlipsClientService flipsClient
+
+@if (IsBusy)
+{
+    <FF.Blazer.Shared.LoadingComponents.AnimatedLoading Message="Loading scores table..." />
+}
+else if (ScoreSearchResult?.Total > 0)
+{
+    <Row Background="Background.Secondary">
+
+        <Column ColumnSize="ColumnSize.IsFull" Margin="Margin.Is2.FromTop">
+            <Heading Size="HeadingSize.Is4" TextAlignment="TextAlignment.Center">Scores</Heading>
+        </Column>
+
+        @if (ShowTitleFilter)
+        {
+            <Column ColumnSize="ColumnSize.Is3.OnDesktop">
+                <Field>
+                    <TextEdit Placeholder="Title" @bind-Text=Query.Title KeyUp="@RunSearchInput" />
+                </Field>
+            </Column>
+        }
+
+        @if (ShowUserFilter)
+        {
+            <Column ColumnSize="ColumnSize.Is3.OnDesktop">
+                <Field>
+                    <TextEdit Placeholder="User" @bind-Text=Query.UserName KeyUp="@RunSearchInput" />
+                </Field>
+            </Column>
+            <Column ColumnSize="ColumnSize.Is3.OnDesktop">
+                <Field>
+                    <Check TValue="bool" @bind-bind-Checked=Query.GetUsersScores CheckedChanged="@RunSearch">Show my machine only</Check>
+                </Field>
+            </Column>
+        }
+    </Row>
+
+    <Row Background="Background.Secondary">
+        <DataGrid TItem="ScoreResultVm" Narrow
+                  Data="@ScoreSearchResult.Scores"
+                  ReadData="@OnReadData"
+                  TotalItems="@ScoreSearchResult.Total"
+                  PageSize="@Limit"                  
+                  ShowPager
+                  Responsive>
+            <DataGridCommandColumn />
+            <DataGridColumn Field="Id" Caption="#" Sortable="false">
+                <DisplayTemplate>
+                    @{
+                        var id = (context as ScoreResultVm)?.GamePlayedId;
+                        if (id.HasValue)
+                        {
+                            //@($"{id.Value.ToString(@"hh\:mm\:ss")}")
+                            var url = $"/GamePlayed/{id}";
+                            <Blazorise.Link Title="View game played" To="@url"><Icon Name="IconName.Eye"></Icon></Blazorise.Link>
+                        }                            
+                    }
+                </DisplayTemplate>
+            </DataGridColumn>
+            <DataGridColumn Field="FileName" Caption="FileName" Sortable="false" />
+            <DataGridColumn Field="@nameof(ScoreResultVm.Points)" Caption="Score" Sortable="false">
+                <DisplayTemplate>
+                    @{       
+                        var p = (context as ScoreResultVm)?.Points;
+                        if(p.HasValue)
+                            @($"{p.Value.ToString("N0")}")
+                    }
+                </DisplayTemplate>
+            </DataGridColumn>
+            <DataGridColumn Field="@nameof(ScoreResultVm.GameTime)" Caption="Time" Sortable="false">
+                <DisplayTemplate>
+                    @{
+                        var gt = (context as ScoreResultVm)?.GameTime;
+                        if (gt.HasValue)
+                            @($"{gt.Value.ToString(@"hh\:mm\:ss")}")
+                    }
+                </DisplayTemplate>
+            </DataGridColumn>
+            <DataGridColumn Field="Initials" Caption="Initials" Sortable="false" />
+            <DataGridColumn Field="Name" Caption="Name" Sortable="false" />
+            <DataGridColumn Field="UserName" Caption="UserName" Sortable="false" />
+        </DataGrid>
+    </Row>
+}
+else
+{
+    <Paragraph>No Games Found</Paragraph>
+}
+
+@code
+{
+    [Parameter] public string GameId { get; set; }
+
+    /// <summary>
+    /// Need these filters as this is a component and if we are showing this on a game page then we don't want to filter the game tile, just use gameId
+    /// </summary>
+    [Parameter] public bool ShowUserFilter { get; set; } = true;
+
+    /// <summary>
+    /// Need these filters as this is a component and if we are showing this on a game page then we don't want to filter the game tile, just use gameId
+    /// </summary>
+    [Parameter] public bool ShowTitleFilter { get; set; } = true;
+
+    [Parameter] public bool ShowUserPlayedOnly { get; set; } = false;
+
+    [Parameter] public long PlayerId { get; set; }
+
+
+    public ScoreSearchResult ScoreSearchResult { get; set; } = new ScoreSearchResult();
+    public ScoresQueryDto Query { get; set; } = new ScoresQueryDto();
+    //public GamePlayedSlimVm SelectedRow { get; set; }
+    public long SelectedRowId { get; set; }
+
+    public int Limit { get; set; } = 10;
+
+    public IEnumerable<RomMenuItemVm> GamePlayedSettings { get; set; }
+
+    bool IsBusy = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Query.Page = 1;
+            Query.Limit = Limit;
+            Query.PlayerId = PlayerId;
+            Query.GameId = GameId;
+            await RunSearch();
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+            ScoreSearchResult = null;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    protected async Task RunSearchInput(KeyboardEventArgs eventCallback)
+    {
+        if (eventCallback.Code == "Enter")
+        {
+            await RunSearch();
+        }
+    }
+
+    protected async Task RunSearch()
+    {
+        ScoreSearchResult = await flipsClient.GetScoresAsync(Query);
+    }
+
+    private async Task OnReadData(DataGridReadDataEventArgs<ScoreResultVm> e)
+    {
+        if (!e.CancellationToken.IsCancellationRequested)
+        {
+            try
+            {
+                //IsBusy = true;
+                Query.Page = e.Page;
+                Query.Limit = e.PageSize;                
+                Query.GetUsersScores = ShowUserPlayedOnly;
+                ShowUserFilter = PlayerId <= 0 && !ShowUserPlayedOnly;
+                await RunSearch();
+            }
+            catch (AccessTokenNotAvailableException exception)
+            {
+                exception.Redirect();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+    }
+
+    private Task OnSelectedRowChanged(GamePlayedSlimVm gamePlayedSlim)
+    {
+        Console.WriteLine("row changed: " + gamePlayedSlim?.Id);
+        //SelectedRow = gamePlayedSlim;
+        //SelectedRowId = gamePlayedSlim?.Id ?? 0;
+        return Task.CompletedTask;
+    }
+}

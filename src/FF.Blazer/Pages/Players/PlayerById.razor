@@ -1,0 +1,84 @@
+﻿@page "/players/{id:long}"
+@attribute [Authorize]
+@inject HttpClient Http
+
+<Microsoft.AspNetCore.Components.Web.Extensions.Head.Title Value="@($"{PlayerViewModel?.Player.UserName} ({PlayerViewModel?.Player?.Name}) - Flipping Flips")" />
+
+@if (PlayerViewModel != null)
+{
+    <Container>
+
+        <Heading Size="HeadingSize.Is1">@($"PLAYER: {PlayerViewModel.Player.Name} ({PlayerViewModel.Player.Initials})")</Heading>
+
+        <Heading Size="HeadingSize.Is2">
+                @($"MACHINE: {PlayerViewModel.Player.MachName}") 
+                <Blazorise.Link To="@($"/machine/{PlayerViewModel.Player.UserName}")">
+                    @PlayerViewModel.Player.UserName
+                </Blazorise.Link>
+        </Heading>
+
+        <Heading Size="HeadingSize.Is4" Margin="Margin.Is2.FromBottom">Total Games Played:@PlayerViewModel.TotalGamesPlayed</Heading>
+
+        <Divider></Divider>
+        <FF.Blazer.Components.Scores.ScoresComponent PlayerId="@Id"/>
+    </Container>
+}
+else
+{
+    <Alert>
+        No player found
+    </Alert>
+}
+
+@code
+{
+    [Parameter] public long Id { get; set; }
+    public PlayerDetailsVm PlayerViewModel { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            if (Id > 0)
+            {
+                var opt = new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web);
+                PlayerViewModel = await Http.GetFromJsonAsync<PlayerDetailsVm>("/players/GetPlayerDetails/" + Id, opt);
+            }
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
+    }
+
+    public class PlayerDetailsVm
+    {
+        public PlayerVm Player { get; set; }
+        public int TotalGamesPlayed { get; set; }
+        public GamePlayedVm[] GamesPlayed { get; set; }
+    }
+
+    public class GamePlayedVm
+    {
+        public long Id { get; set; }
+        public string GameId { get; set; }
+        public string Title { get; set; }
+        public long Points { get; set; }
+        public DateTime Ended { get; set; }
+    }
+
+    public class PlayerVm
+    {
+        public long Id { get; set; }
+        public string Initials { get; set; }
+        public string Name { get; set; }
+        public bool MachineDefault { get; set; }
+        public string UserName { get; set; }
+        public string MachName { get; set; }
+    }
+}
+

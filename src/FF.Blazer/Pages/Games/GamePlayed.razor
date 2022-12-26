@@ -1,0 +1,213 @@
+﻿@page "/GamePlayed/{id:long}"
+@using FF.Shared.ViewModel.Games;
+@using FF.Shared.ViewModel.Menus;
+@attribute [Authorize]
+@inject IFlipsClientService flipsClient
+
+<Microsoft.AspNetCore.Components.Web.Extensions.Head.Title Value="@($"Game Played: {Id} - Flipping Flips")" />
+
+@if (IsBusy)
+{
+    <FF.Blazer.Shared.LoadingComponents.AnimatedLoading Message="Loading game played..." />
+}
+else
+{
+    <Container>
+
+        @if (GamePlayedVm != null)
+        {
+            <Row>
+                <Column ColumnSize="ColumnSize.Is2.OnDesktop">
+                    <Image Source="@GamePlayedVm.Translite" Fluid TextAlignment="TextAlignment.Center"></Image>
+                </Column>
+
+                <Column ColumnSize="ColumnSize.Is6">
+                    <Row>
+                        <Column ColumnSize="ColumnSize.Is12">
+                            <Heading Size=HeadingSize.Is3 TextAlignment="TextAlignment.Center">
+                                @GamePlayedVm.Title
+                            </Heading>
+                        </Column>
+                        <Column ColumnSize="ColumnSize.Is12">
+                            <Heading Size=HeadingSize.Is5 TextAlignment="TextAlignment.Center">
+                                File: @GamePlayedVm.FileName (@GamePlayedVm.GameVersion)
+                            </Heading>
+                        </Column>
+                        <Column ColumnSize="ColumnSize.Is12">
+                            <Heading Size=HeadingSize.Is4 TextAlignment="TextAlignment.Center">
+                                @GamePlayedVm.GameType.ToString()
+                            </Heading>
+                            <Paragraph TextAlignment="TextAlignment.Center">@GamePlayedVm.Author</Paragraph>
+                        </Column>
+                    </Row>
+                </Column>
+            </Row>
+
+            <Row>
+                <Divider />                
+                <Heading Class="text-center" Size="HeadingSize.Is5">@GamePlayedVm.Posted.ToString("f") | GameTime: @GamePlayedVm.GameTime.ToString(@"hh\:mm\:ss")</Heading>
+                <Heading Class="text-center" Size="HeadingSize.Is6">
+                    @{
+                        var machineUrl = $"/machine/{GamePlayedVm.User}";
+                    }
+                    Machine: @GamePlayedVm.MachineName <Span><Blazorise.Link To="@machineUrl">(@GamePlayedVm.User)</Blazorise.Link></Span>
+                </Heading>
+
+                @*Scores table*@
+                <Heading TextAlignment="TextAlignment.Center" Size="HeadingSize.Is3">Scores</Heading>
+                <Column ColumnSize="ColumnSize.Is12.OnDesktop">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHeaderCell>Pos</TableHeaderCell>
+                                <TableHeaderCell>Score</TableHeaderCell>
+                                <TableHeaderCell>Player</TableHeaderCell>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            @{
+                                int i = 1;
+                            }
+                            @foreach (var item in GamePlayedVm.Scores.OrderByDescending(x => x.Points))
+                            {
+                                var pos = i; //local var to hold player position
+                                <TableRow>
+                                    <TableRowHeader>
+                                        #@pos
+                                    </TableRowHeader>
+                                    <TableRowCell>@item.Points.ToString("N0")</TableRowCell>
+                                    <TableRowCell>
+                                        <Blazorise.Link To="@($"/players/{item.PlayerId}")">
+                                            @item.Initials (@item.Name)
+                                        </Blazorise.Link>
+                                    </TableRowCell>
+                                </TableRow>
+                                i++;
+                            }
+                        </TableBody>
+                    </Table>
+                </Column>
+
+                <Heading Class="text-center" Size="HeadingSize.Is6">System Info: @GamePlayedVm.SystemType.ToString() | System Version: @GamePlayedVm.SystemVersion | Rom: @GamePlayedVm.Rom</Heading>
+                <Divider/>
+
+                @*Optional get game settings*@
+                <Column ColumnSize="ColumnSize.IsFull" Margin="Margin.Is2.FromTop">
+                    <Heading Size="HeadingSize.Is3" TextAlignment="TextAlignment.Center">
+                        Game Settings  
+                        <Span>
+                            @if(GamePlayedSettings == null)
+                            {
+                                <Button Color="Color.Primary" Clicked="@GetRomSettings">
+                                        Get Detailed Game Settings
+                                </Button>
+                            }
+                        </Span>
+                    </Heading>
+                    <Divider/>
+                </Column>
+
+                @*EXTRA ROM SETTINGS*@
+                @if (GamePlayedSettings != null)
+                {
+                    <Column ColumnSize="ColumnSize.Is12">
+                        @if (GamePlayedSettings?.Count() > 0)
+                        {
+                            <Row>
+                                @{
+                                    var groups = GamePlayedSettings.GroupBy(x => x.Menu);
+                                    foreach (var group in groups)
+                                    {
+                                        <Column ColumnSize="ColumnSize.Is6.OnDesktop">
+                                            <Heading Size="HeadingSize.Is5">@group.Key</Heading>
+                                            <Table Responsive Style="font-size:smaller">
+                                                <TableHeader>
+                                                    <TableRow>
+                                                        <TableHeaderCell>Key</TableHeaderCell>
+                                                        <TableHeaderCell>Label</TableHeaderCell>
+                                                        <TableHeaderCell>Default</TableHeaderCell>
+                                                        <TableHeaderCell>Value</TableHeaderCell>
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    @foreach (var item in group)
+                                                    {
+                                                        <TableRow>
+                                                            <TableRowHeader>#@item.Key</TableRowHeader>
+                                                            <TableRowCell>@item.Name</TableRowCell>
+                                                            <TableRowCell>@item.DefaultValue</TableRowCell>
+                                                            <TableRowCell>@item.Value</TableRowCell>
+                                                        </TableRow>
+                                                    }
+                                                </TableBody>
+                                            </Table>
+                                        </Column>
+                                    }
+                                }
+
+                            </Row>
+                        }
+                    </Column>
+                }
+            </Row>
+        }
+        else
+        {
+            <Row>
+                <Heading Size=HeadingSize.Is4 TextAlignment="TextAlignment.Center">
+                    Game played couldn't be found for game id @Id
+                </Heading>
+            </Row>
+        }
+    </Container>
+}
+
+@code
+{
+    [Parameter] public long Id { get; set; }
+
+    public GamePlayedVm GamePlayedVm { get; private set; }
+
+    public IEnumerable<RomMenuItemVm> GamePlayedSettings { get; set; }
+
+    bool IsBusy = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (Id <= 0)
+            {
+                IsBusy = false;
+            }
+            else
+            {
+                GamePlayedVm = await flipsClient.GetGamePlayedByIdAsync(Id);
+            }
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.ToString());
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    protected async Task GetRomSettings()
+    {
+        try
+        {
+            if (GamePlayedSettings == null)
+            {
+                GamePlayedSettings = await flipsClient.GetGamePlayedSettingsAsync(Id);
+            }            
+        }
+        catch (Exception ex){Console.WriteLine($"{ex.Message} {ex.InnerException?.Message}"); }
+    }
+}
